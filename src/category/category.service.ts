@@ -36,7 +36,17 @@ export class CategoryService {
   }
 
   async update(id: string, body: UpdateCategoryDto) {
-    let promises = [];
+    const categoryData = await this.categoryRepository.findOneBy({ id: +id });
+
+    for (let id of body.products) {
+      const productItem = await this.productRepository.findOne({
+        relations: { categories: true },
+        where: { id },
+      });
+
+      productItem.categories = [...productItem.categories, { ...categoryData }];
+      await this.productRepository.save(productItem);
+    }
 
     const category = await this.categoryRepository.findOne({
       relations: {
@@ -45,25 +55,8 @@ export class CategoryService {
       where: { id: +id },
     });
 
-    for (let id of body.products) {
-      const productItem = await this.productRepository.findOne({
-        relations: { categories: true },
-        where: { id },
-      });
-
-      productItem.categories = [...productItem.categories, { ...category }];
-      await this.productRepository.save(productItem);
-      promises.push(productItem);
-    }
-
-    const [...products] = await Promise.all([...promises]);
-
     category.name = body.name ?? category.name;
     category.description = body.description ?? category.description;
-    category.products =
-      products.length > 0
-        ? [...category.products, ...products]
-        : category.products;
 
     return await this.categoryRepository.save(category);
   }

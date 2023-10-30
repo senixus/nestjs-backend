@@ -16,7 +16,7 @@ export class CreateCategoryDto {
 
   @IsString()
   @IsNotEmpty()
-  @MinLength(75)
+  @MinLength(5)
   @MaxLength(150)
   description: string;
 
