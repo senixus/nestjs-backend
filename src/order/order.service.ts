@@ -7,9 +7,9 @@ import { CreateOrderDto } from './dto/create-order.dto';
 
 @Injectable()
 export class OrderService {
-  @InjectRepository(Order) private readonly orderRepository: Repository<Order>;
+  @InjectRepository(Order) orderRepository: Repository<Order>;
   @InjectRepository(Product)
-  private readonly productRepository: Repository<Product>;
+  productRepository: Repository<Product>;
 
   async getAll() {
     return await this.orderRepository.find();
