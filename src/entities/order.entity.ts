@@ -14,8 +14,8 @@ export class Order {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  totalPrice: string;
+  @Column('decimal', { precision: 10, scale: 2, nullable: true })
+  totalPrice: number;
 
   @Column()
   status: string;
