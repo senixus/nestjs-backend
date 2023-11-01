@@ -11,7 +11,7 @@ export class ProductService {
   @InjectRepository(Product) productRepository: Repository<Product>;
   @InjectRepository(Category) categoryRepository: Repository<Category>;
 
-  async getAll() {
+  async getAll(): Promise<Product[]> {
     const products = await this.productRepository
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.categories', 'categories')
@@ -19,15 +19,15 @@ export class ProductService {
     return products;
   }
 
-  async create(body: CreateProductDto) {
+  async create(body: CreateProductDto): Promise<CreateProductDto & Product> {
     return await this.productRepository.save(body);
   }
 
-  async getById(id: string) {
+  async getById(id: string): Promise<Product> {
     return await this.productRepository.findOne({ where: { id: +id } });
   }
 
-  async update(id: string, body: UpdateProductDto) {
+  async update(id: string, body: UpdateProductDto): Promise<Product> {
     const product = await this.productRepository.findOneBy({ id: +id });
 
     for (let id of body.categories) {

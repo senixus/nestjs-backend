@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from 'src/entities/product.entity';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { Category } from './../entities/category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -11,21 +11,21 @@ export class CategoryService {
   @InjectRepository(Category) categoryRepository: Repository<Category>;
   @InjectRepository(Product) productRepository: Repository<Product>;
 
-  async getAll() {
+  async getAll(): Promise<Category[]> {
     return await this.categoryRepository.find({
       relations: { products: true },
     });
   }
 
-  async create(category: CreateCategoryDto) {
+  async create(category: CreateCategoryDto): Promise<Category> {
     return await this.categoryRepository.save(category);
   }
 
-  async getById(id: string) {
+  async getById(id: string): Promise<Category> {
     return await this.categoryRepository.findOneBy({ id: +id });
   }
 
-  async remove(id: string) {
+  async remove(id: string): Promise<DeleteResult> {
     const category = await this.categoryRepository.findOneBy({ id: +id });
 
     if (category) {
@@ -35,7 +35,7 @@ export class CategoryService {
     }
   }
 
-  async update(id: string, body: UpdateCategoryDto) {
+  async update(id: string, body: UpdateCategoryDto): Promise<Category> {
     const categoryData = await this.categoryRepository.findOneBy({ id: +id });
 
     for (let id of body.products) {

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreateOrderDto {
   @IsString()
@@ -6,9 +6,10 @@ export class CreateOrderDto {
   totalPrice: string;
 
   @IsNotEmpty()
+  @IsArray()
   products: number[];
 
   @IsNotEmpty()
   @IsNumber()
-  user: number;
+  userId: number;
 }
