@@ -17,7 +17,7 @@ export class Order {
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
   totalPrice: number;
 
-  @Column()
+  @Column({ default: 'created' })
   status: string;
 
   @ManyToMany(() => Product, (product) => product.orders)

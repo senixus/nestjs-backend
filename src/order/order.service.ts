@@ -37,8 +37,7 @@ export class OrderService {
 
     const order = await this.orderRepository.save({
       products,
-      status: 'created',
-      totalPrice: body.totalPrice,
+      totalPrice: +body.totalPrice,
       user,
     });
     return order;

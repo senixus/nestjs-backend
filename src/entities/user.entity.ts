@@ -19,10 +19,10 @@ export class User {
   password: string;
 
   @Column({ nullable: true })
-  resetPasswordToken: string;
+  resetPasswordCode: string;
 
   @Column({ nullable: true })
-  resetPasswordTokenExpire: Date;
+  resetPasswordCodeExpire: Date;
 
   @OneToMany(() => Order, (order) => order.user)
   orders: Order[];
