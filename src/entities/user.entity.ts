@@ -21,8 +21,8 @@ export class User {
   @Column({ nullable: true })
   resetPasswordCode: string;
 
-  @Column({ nullable: true })
-  resetPasswordCodeExpire: Date;
+  @Column('bigint', { nullable: true })
+  resetPasswordCodeExpire: number;
 
   @OneToMany(() => Order, (order) => order.user)
   orders: Order[];
