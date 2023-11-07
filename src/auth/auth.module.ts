@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { MailService } from 'src/mail/mail.service';
 
 @Module({
   imports: [
@@ -11,6 +12,6 @@ import { AuthService } from './auth.service';
     JwtModule.register({ secret: 'test' }),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, MailService],
 })
 export class AuthModule {}

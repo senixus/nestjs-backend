@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -12,11 +13,13 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/entities/user.entity';
 import { SigninDto } from './dto/sing-in.dto';
 import { SignupDto } from './dto/sign-up.dto';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class AuthService {
   @InjectRepository(User) userRepository: Repository<User>;
   @Inject() private jwtService: JwtService;
+  @Inject() mailService: MailService;
 
   async signin(body: SigninDto) {
     const user = await this.userRepository.findOneBy({ email: body.email });
@@ -52,13 +55,66 @@ export class AuthService {
 
     const accessToken = await this.createJwtToken(savedUser.id);
 
+    await this.mailService.registerMail(savedUser.firstName, savedUser.email);
+
     return {
       ...savedUser,
       accessToken,
     };
   }
 
-  async createJwtToken(id: number) {
+  async sendResetPasswordCode(email: string) {
+    const user = await this.userRepository.findOneBy({ email });
+
+    if (!user) {
+      throw new NotFoundException('There is no user with that email address!');
+    }
+
+    const code = this.generateCode();
+
+    user.resetPasswordCode = `${code}`;
+    user.resetPasswordCodeExpire = Date.now() + 3600 * 1000;
+
+    await this.userRepository.save(user);
+
+    await this.mailService.sendConfirmationCode(email, `${code}`);
+
+    return {
+      message:
+        'Your confirmation code has been sent please check your e-mail address',
+    };
+  }
+
+  async resetPassword(code: string, email: string, newPassword: string) {
+    const user = await this.userRepository.findOneBy({ email });
+    if (!user) {
+      throw new NotFoundException('There is no user with that email address!');
+    }
+
+    if (user.resetPasswordCodeExpire < Date.now()) {
+      throw new UnauthorizedException('The code has been expired');
+    }
+
+    if (user.resetPasswordCode !== code) {
+      throw new NotFoundException('The code has not been found');
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.resetPasswordCode = null;
+    user.resetPasswordCodeExpire = null;
+
+    await this.userRepository.save(user);
+
+    return {
+      message: 'Your password has been updated successfully',
+    };
+  }
+
+  generateCode(): number {
+    return Math.floor(100000 + Math.random() * 900000);
+  }
+
+  async createJwtToken(id: number): Promise<string> {
     return this.jwtService.sign({ id });
   }
 }
