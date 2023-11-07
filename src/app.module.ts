@@ -35,7 +35,7 @@ import { MailModule } from './mail/mail.module';
         username: configService.get('DATABASE_USER'),
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get('DATABASE_DB'),
-        entities: [User, Order, Product, Category],
+        entities: [__dirname + '/**/*.entity.{ts,js}'],
         synchronize: true,
       }),
     }),
