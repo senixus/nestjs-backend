@@ -63,7 +63,7 @@ export class AuthService {
     };
   }
 
-  async sendResetPasswordCode(email: string) {
+  async sendResetPasswordCode(email: string): Promise<{ message: string }> {
     const user = await this.userRepository.findOneBy({ email });
 
     if (!user) {
@@ -85,7 +85,11 @@ export class AuthService {
     };
   }
 
-  async resetPassword(code: string, email: string, newPassword: string) {
+  async resetPassword(
+    code: string,
+    email: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
     const user = await this.userRepository.findOneBy({ email });
     if (!user) {
       throw new NotFoundException('There is no user with that email address!');
