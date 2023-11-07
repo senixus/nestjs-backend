@@ -14,6 +14,7 @@ import { Order } from './entities/order.entity';
 import { Product } from './entities/product.entity';
 import { Category } from './entities/category.entity';
 import { UserModule } from './user/user.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { UserModule } from './user/user.module';
     ProductModule,
     OrderModule,
     UserModule,
+    MailModule,
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
