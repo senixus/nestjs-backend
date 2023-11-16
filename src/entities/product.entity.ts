@@ -5,6 +5,7 @@ import {
   ManyToMany,
   JoinTable,
 } from 'typeorm';
+import { Cart } from './cart.entity';
 import { Category } from './category.entity';
 import { Order } from './order.entity';
 
@@ -34,4 +35,7 @@ export class Product {
 
   @ManyToMany(() => Order, (order) => order.products)
   orders: Order[];
+
+  @ManyToMany(() => Cart, (cart) => cart.products)
+  carts: Cart[];
 }
