@@ -22,7 +22,10 @@ export class AuthService {
   @Inject() mailService: MailService;
 
   async signin(body: SigninDto) {
-    const user = await this.userRepository.findOneBy({ email: body.email });
+    const user = await this.userRepository.findOneOrFail({
+      where: { email: body.email },
+      select: ['email', 'firstName', 'lastName', 'password', 'id'],
+    });
 
     if (!user) {
       throw new NotFoundException('Not found');
@@ -33,6 +36,9 @@ export class AuthService {
       throw new BadRequestException('Password or email is incorrect');
     }
     const accessToken = await this.createJwtToken(user.id);
+
+    delete user.password;
+
     return {
       ...user,
       accessToken,
