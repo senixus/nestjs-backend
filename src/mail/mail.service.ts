@@ -24,6 +24,16 @@ export class MailService {
     await this.mailTemplate(config);
   }
 
+  async createOrder(email: string) {
+    const config = {
+      to: email,
+      subject: 'Order Information',
+      text: `Your order has been created successfully`,
+    };
+
+    await this.mailTemplate(config);
+  }
+
   async mailTemplate(data: IMail) {
     const config: IMail = {
       to: data.to, // list of receivers
