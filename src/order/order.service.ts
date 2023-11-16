@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Cart } from 'src/entities/cart.entity';
 import { Order } from 'src/entities/order.entity';
 import { Product } from 'src/entities/product.entity';
 import { User } from 'src/entities/user.entity';
+import { MailService } from 'src/mail/mail.service';
 import { Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 
@@ -11,39 +13,51 @@ export class OrderService {
   @InjectRepository(Order) orderRepository: Repository<Order>;
   @InjectRepository(User) userRepository: Repository<User>;
   @InjectRepository(Product) productRepository: Repository<Product>;
+  @InjectRepository(Cart) cartRepository: Repository<Cart>;
+  @Inject() mailService: MailService;
 
   async getAll(): Promise<Order[]> {
     return await this.orderRepository.find();
   }
 
   async create(body: CreateOrderDto): Promise<Order> {
-    const user = await this.userRepository.findOne({
+    const cart = await this.cartRepository.findOne({
       relations: {
-        orders: true,
+        products: true,
       },
+      where: { id: body.cartId },
+    });
+
+    const user = await this.userRepository.findOne({
       where: { id: body.userId },
     });
 
-    let products: Product[] = [];
-
-    for (let id of body.products) {
-      const product = await this.productRepository.findOne({
-        relations: { orders: true },
-        where: { id },
-      });
-
-      products.push(product);
-    }
-
     const order = await this.orderRepository.save({
-      products,
-      totalPrice: +body.totalPrice,
+      products: cart.products,
+      totalPrice: cart.code
+        ? Math.abs(+cart.totalPriceAfterDiscount)
+        : cart.totalPrice,
+      user,
+      cart,
+    });
+
+    await this.cartRepository.save({
+      ...cart,
+      status: 'completed',
+      order,
       user,
     });
+    await this.mailService.createOrder(user.email);
+
     return order;
   }
 
-  async getById(id: string): Promise<Order> {
-    return await this.orderRepository.findOneBy({ id: +id });
+  async getById(id: number): Promise<Order> {
+    return await this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.products', 'products')
+      .leftJoinAndSelect('order.user', 'user')
+      .where({ id })
+      .getOne();
   }
 }
