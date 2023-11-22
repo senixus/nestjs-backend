@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Cart } from './cart.entity';
 import { Discount } from './discount.entity';
+import { File } from './file.entity';
 import { Order } from './order.entity';
 
 @Entity('user')
@@ -32,6 +33,13 @@ export class User {
 
   @Column('bigint', { nullable: true })
   resetPasswordCodeExpire: number;
+
+  @OneToOne(() => File, (file) => file.profilePhoto)
+  @JoinColumn()
+  avatar: File;
+
+  @Column({ nullable: true })
+  avatarUrl: string;
 
   @OneToMany(() => Order, (order) => order.user)
   orders: Order[];
