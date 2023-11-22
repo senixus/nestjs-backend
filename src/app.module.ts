@@ -13,6 +13,7 @@ import { UserModule } from './user/user.module';
 import { MailModule } from './mail/mail.module';
 import { DiscountModule } from './discount/discount.module';
 import { CartModule } from './cart/cart.module';
+import { FileModule } from './file/file.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { CartModule } from './cart/cart.module';
     MailModule,
     DiscountModule,
     CartModule,
+    FileModule,
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
