@@ -10,6 +10,7 @@ import { Cart } from './cart.entity';
 import { Discount } from './discount.entity';
 import { File } from './file.entity';
 import { Order } from './order.entity';
+import { Role } from '../enums/role.enum';
 
 @Entity('user')
 export class User {
@@ -33,6 +34,9 @@ export class User {
 
   @Column('bigint', { nullable: true })
   resetPasswordCodeExpire: number;
+
+  @Column({ default: Role.User })
+  role: Role;
 
   @OneToOne(() => File, (file) => file.profilePhoto)
   @JoinColumn()
