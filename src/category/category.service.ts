@@ -24,40 +24,4 @@ export class CategoryService {
   async getById(id: string): Promise<Category> {
     return await this.categoryRepository.findOneBy({ id: +id });
   }
-
-  async remove(id: string): Promise<DeleteResult> {
-    const category = await this.categoryRepository.findOneBy({ id: +id });
-
-    if (category) {
-      return await this.categoryRepository.delete(category.id);
-    } else {
-      throw new NotFoundException('not found');
-    }
-  }
-
-  async update(id: string, body: UpdateCategoryDto): Promise<Category> {
-    const categoryData = await this.categoryRepository.findOneBy({ id: +id });
-
-    for (let id of body.products) {
-      const productItem = await this.productRepository.findOne({
-        relations: { categories: true },
-        where: { id },
-      });
-
-      productItem.categories = [...productItem.categories, { ...categoryData }];
-      await this.productRepository.save(productItem);
-    }
-
-    const category = await this.categoryRepository.findOne({
-      relations: {
-        products: true,
-      },
-      where: { id: +id },
-    });
-
-    category.name = body.name ?? category.name;
-    category.description = body.description ?? category.description;
-
-    return await this.categoryRepository.save(category);
-  }
 }

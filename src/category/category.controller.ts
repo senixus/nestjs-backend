@@ -21,23 +21,8 @@ export class CategoryController {
     return await this.categoryService.getAll();
   }
 
-  @Post('/create')
-  async create(@Body() body: CreateCategoryDto) {
-    return await this.categoryService.create(body);
-  }
-
   @Get(':id')
   async getById(@Param('id') id: string) {
     return await this.categoryService.getById(id);
-  }
-
-  @Patch(':id')
-  async update(@Param('id') id: string, @Body() body: UpdateCategoryDto) {
-    return await this.categoryService.update(id, body);
-  }
-
-  @Delete(':id')
-  async delete(@Param('id') id: string) {
-    return await this.categoryService.remove(id);
   }
 }

@@ -1,16 +1,17 @@
 import { JwtService } from '@nestjs/jwt';
 import { Module } from '@nestjs/common';
-import { CategoryModule } from './category/category.module';
-import { OrderModule } from './order/order.module';
-import { ProductModule } from './product/product.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-// import configuration from './config/configuration';
-import { AuthModule } from './auth/auth.module';
-import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard } from './auth/auth.guard';
 import { TypeOrmModule } from '@nestjs/typeorm';
+// import configuration from './config/configuration';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ProductModule } from './product/product.module';
+import { OrderModule } from './order/order.module';
+import { APP_GUARD } from '@nestjs/core';
+import { CategoryModule } from './category/category.module';
+import { AuthModule } from './auth/auth.module';
+import { AuthGuard } from './auth/auth.guard';
 import { UserModule } from './user/user.module';
 import { MailModule } from './mail/mail.module';
+import { AdminModule } from './admin/admin.module';
 import { DiscountModule } from './discount/discount.module';
 import { CartModule } from './cart/cart.module';
 import { FileModule } from './file/file.module';
@@ -26,6 +27,7 @@ import { FileModule } from './file/file.module';
     DiscountModule,
     CartModule,
     FileModule,
+    AdminModule,
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
