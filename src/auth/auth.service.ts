@@ -13,18 +13,19 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/entities/user.entity';
 import { SigninDto } from './dto/sing-in.dto';
 import { SignupDto } from './dto/sign-up.dto';
-import { MailService } from 'src/mail/mail.service';
+import { RegisterEmail, ConfirmationCodeEmail } from 'src/mail/mail.service';
 
 @Injectable()
 export class AuthService {
   @InjectRepository(User) userRepository: Repository<User>;
   @Inject() private jwtService: JwtService;
-  @Inject() mailService: MailService;
+  @Inject() registerEmail: RegisterEmail;
+  @Inject() confirmationCodeEmail: ConfirmationCodeEmail;
 
   async signin(body: SigninDto) {
     const user = await this.userRepository.findOneOrFail({
       where: { email: body.email },
-      select: ['email', 'firstName', 'lastName', 'password', 'id'],
+      select: ['email', 'firstName', 'lastName', 'password', 'id', 'role'],
     });
 
     if (!user) {
@@ -35,7 +36,7 @@ export class AuthService {
     if (!isMatched) {
       throw new BadRequestException('Password or email is incorrect');
     }
-    const accessToken = await this.createJwtToken(user.id);
+    const accessToken = await this.createJwtToken(user);
 
     delete user.password;
 
@@ -59,9 +60,9 @@ export class AuthService {
       password: hashedPassword,
     });
 
-    const accessToken = await this.createJwtToken(savedUser.id);
+    const accessToken = await this.createJwtToken(savedUser);
 
-    await this.mailService.registerMail(savedUser.firstName, savedUser.email);
+    this.registerEmail.configMail(savedUser.firstName, savedUser.email);
 
     return {
       ...savedUser,
@@ -83,7 +84,7 @@ export class AuthService {
 
     await this.userRepository.save(user);
 
-    await this.mailService.sendConfirmationCode(email, `${code}`);
+    this.confirmationCodeEmail.configMail(email, `${code}`);
 
     return {
       message:
@@ -124,7 +125,7 @@ export class AuthService {
     return Math.floor(100000 + Math.random() * 900000);
   }
 
-  async createJwtToken(id: number): Promise<string> {
-    return this.jwtService.sign({ id });
+  async createJwtToken(user: User): Promise<string> {
+    return this.jwtService.sign({ ...user });
   }
 }

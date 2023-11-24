@@ -4,7 +4,7 @@ import { Cart } from 'src/entities/cart.entity';
 import { Order } from 'src/entities/order.entity';
 import { Product } from 'src/entities/product.entity';
 import { User } from 'src/entities/user.entity';
-import { MailService } from 'src/mail/mail.service';
+import { CreateOrderEmail } from 'src/mail/mail.service';
 import { Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 
@@ -14,7 +14,7 @@ export class OrderService {
   @InjectRepository(User) userRepository: Repository<User>;
   @InjectRepository(Product) productRepository: Repository<Product>;
   @InjectRepository(Cart) cartRepository: Repository<Cart>;
-  @Inject() mailService: MailService;
+  @Inject() createOrderEmail: CreateOrderEmail;
 
   async getAll(): Promise<Order[]> {
     return await this.orderRepository.find();
@@ -47,7 +47,10 @@ export class OrderService {
       order,
       user,
     });
-    await this.mailService.createOrder(user.email);
+
+    const mail = this.createOrderEmail.configMail(user.email);
+
+    // await this.mailService.createOrder(user.email);
 
     return order;
   }
