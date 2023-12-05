@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Inject,
   Injectable,
   NotFoundException,
@@ -14,11 +15,13 @@ import { User } from 'src/entities/user.entity';
 import { SigninDto } from './dto/sing-in.dto';
 import { SignupDto } from './dto/sign-up.dto';
 import { RegisterEmail, ConfirmationCodeEmail } from 'src/mail/mail.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   @InjectRepository(User) userRepository: Repository<User>;
   @Inject() private jwtService: JwtService;
+  @Inject() private configService: ConfigService;
   @Inject() registerEmail: RegisterEmail;
   @Inject() confirmationCodeEmail: ConfirmationCodeEmail;
 
@@ -36,13 +39,18 @@ export class AuthService {
     if (!isMatched) {
       throw new BadRequestException('Password or email is incorrect');
     }
-    const accessToken = await this.createJwtToken(user);
+    const [accessToken, refreshToken] = await Promise.all([
+      this.createAccessToken(user),
+      this.createRefreshToken(user),
+    ]);
 
+    this.hashRefreshToken(user.id, refreshToken);
     delete user.password;
 
     return {
       ...user,
       accessToken,
+      refreshToken,
     };
   }
 
@@ -60,13 +68,17 @@ export class AuthService {
       password: hashedPassword,
     });
 
-    const accessToken = await this.createJwtToken(savedUser);
-
+    const [accessToken, refreshToken] = await Promise.all([
+      this.createAccessToken(savedUser),
+      this.createRefreshToken(savedUser),
+    ]);
+    this.hashRefreshToken(savedUser.id, refreshToken);
     this.registerEmail.configMail(savedUser.firstName, savedUser.email);
 
     return {
       ...savedUser,
       accessToken,
+      refreshToken,
     };
   }
 
@@ -125,7 +137,56 @@ export class AuthService {
     return Math.floor(100000 + Math.random() * 900000);
   }
 
-  async createJwtToken(user: User): Promise<string> {
-    return this.jwtService.sign({ ...user });
+  async createAccessToken(user: User): Promise<string> {
+    return await this.jwtService.signAsync(
+      { ...user },
+      {
+        secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
+      },
+    );
+  }
+
+  async createRefreshToken(user: User): Promise<string> {
+    return await this.jwtService.signAsync(
+      { ...user },
+      {
+        secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
+        expiresIn: 60 * 60 * 24 * 7,
+      },
+    );
+  }
+
+  async hashRefreshToken(userId: number, refreshToken: string): Promise<void> {
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+
+    await this.userRepository.update(
+      { id: userId },
+      { currentHashedRefreshToken: hashedRefreshToken },
+    );
+  }
+
+  async refreshToken(
+    id: number,
+    refreshToken: string,
+  ): Promise<{ accessToken: string; refreshTokn: string }> {
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) throw new ForbiddenException('Access Denied');
+
+    const refreshTokenMatches = await bcrypt.compare(
+      refreshToken,
+      user.currentHashedRefreshToken,
+    );
+
+    if (!refreshTokenMatches) throw new ForbiddenException('Access Denied');
+
+    const [accessToken, refreshTokn] = await Promise.all([
+      this.createAccessToken(user),
+      this.createRefreshToken(user),
+    ]);
+    this.hashRefreshToken(user.id, refreshTokn);
+    return {
+      accessToken,
+      refreshTokn,
+    };
   }
 }

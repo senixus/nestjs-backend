@@ -11,6 +11,7 @@ import { Discount } from './discount.entity';
 import { File } from './file.entity';
 import { Order } from './order.entity';
 import { Role } from '../enums/role.enum';
+import { Exclude } from 'class-transformer';
 
 @Entity('user')
 export class User {
@@ -34,6 +35,10 @@ export class User {
 
   @Column('bigint', { nullable: true })
   resetPasswordCodeExpire: number;
+
+  @Column({ nullable: true })
+  @Exclude()
+   currentHashedRefreshToken?: string;
 
   @Column({ default: Role.User })
   role: Role;

@@ -8,7 +8,7 @@ import { OrderModule } from './order/order.module';
 import { APP_GUARD } from '@nestjs/core';
 import { CategoryModule } from './category/category.module';
 import { AuthModule } from './auth/auth.module';
-import { AuthGuard } from './auth/auth.guard';
+import { JwtAuthGuard } from './auth/auth.guard';
 import { UserModule } from './user/user.module';
 import { MailModule } from './mail/mail.module';
 import { AdminModule } from './admin/admin.module';
@@ -46,10 +46,10 @@ import { FileModule } from './file/file.module';
   ],
   // controllers: [],
   providers: [
-    JwtService,
+    // JwtService,
     {
       provide: APP_GUARD,
-      useClass: AuthGuard,
+      useClass: JwtAuthGuard,
     },
   ],
 })

@@ -53,7 +53,7 @@ export class AdminService {
     return await this.productRepository.save(productEntity);
   }
 
-  async deleteProduct(id: number) {
+  async deleteProduct(id: number): Promise<DeleteResult> {
     return await this.productRepository.delete(id);
   }
   async createCategory(
