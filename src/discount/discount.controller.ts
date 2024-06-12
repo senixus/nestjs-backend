@@ -6,10 +6,6 @@ import { ToggleDiscountDto } from './dto/toggle-discount.dto';
 export class DiscountController {
   @Inject() private readonly discountService: DiscountService;
 
-  // Create Basket endpoint oluşturulmalı
-  // çünkü indirim uyguladığımızda ürünlerin fiyatları da düşmeli.
-  // Order service de yapacağız
-
   @Post()
   async create(@Body() data: { userId: number }) {
     return await this.discountService.create(data.userId);
